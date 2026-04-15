@@ -1,0 +1,121 @@
+--------------------------------------------------------------------------------
+-- Company: 
+-- Engineer:
+--
+-- Create Date:   04:46:54 04/15/2026
+-- Design Name:   
+-- Module Name:   /home/ise/PW6/tb_top.vhd
+-- Project Name:  PW6
+-- Target Device:  
+-- Tool versions:  
+-- Description:   
+-- 
+-- VHDL Test Bench Created by ISE for module: top
+-- 
+-- Dependencies:
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+--
+-- Notes: 
+-- This testbench has been automatically generated using types std_logic and
+-- std_logic_vector for the ports of the unit under test.  Xilinx recommends
+-- that these types always be used for the top-level I/O of a design in order
+-- to guarantee that the testbench will bind correctly to the post-implementation 
+-- simulation model.
+--------------------------------------------------------------------------------
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+ 
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--USE ieee.numeric_std.ALL;
+ 
+ENTITY tb_top IS
+END tb_top;
+ 
+ARCHITECTURE behavior OF tb_top IS 
+ 
+    -- Component Declaration for the Unit Under Test (UUT)
+ 
+    COMPONENT top
+    PORT(
+         clk : IN  std_logic;
+         rx : IN  std_logic;
+         seg0 : OUT  std_logic_vector(6 downto 0);
+         seg1 : OUT  std_logic_vector(6 downto 0)
+        );
+    END COMPONENT;
+    
+
+   --Inputs
+   signal clk : std_logic := '0';
+   signal rx : std_logic := '1';
+
+ 	--Outputs
+   signal seg0 : std_logic_vector(6 downto 0);
+   signal seg1 : std_logic_vector(6 downto 0);
+
+   -- Clock period definitions
+    constant clk_period : time := 542 ns;  -- 1.8432 MHz
+	 constant bit_period : time := 17.36 us; -- 57600 baud
+ 
+BEGIN
+ 
+	-- Instantiate the Unit Under Test (UUT)
+   uut: top PORT MAP (
+          clk => clk,
+          rx => rx,
+          seg0 => seg0,
+          seg1 => seg1
+        );
+
+   -- Clock process definitions
+   clk_process :process
+   begin
+		clk <= '0';
+		wait for clk_period/2;
+		clk <= '1';
+		wait for clk_period/2;
+   end process;
+	
+	-- UART TRANSMIT TASK
+	uart_send : process
+    procedure send_byte(data : std_logic_vector(7 downto 0)) is
+    begin
+        -- START BIT
+        rx <= '0';
+        wait for bit_period;
+		  
+	 -- DATA BITS (LSB FIRST)
+        for i in 0 to 7 loop
+            rx <= data(i);
+            wait for bit_period;
+        end loop;
+
+     -- STOP BIT
+        rx <= '1';
+        wait for bit_period;
+    end procedure;
+		begin
+	 -- Wait before sending
+		 wait for 100 us;
+		 
+	 -- Example: send BCD "43"
+		 -- digit1 = 4 (0100), digit0 = 3 (0011)
+		 send_byte("01000011");
+
+		 -- Wait to observe output
+		 wait for 20 us;
+
+		 -- Send another example: "25"
+		 send_byte("00100101");
+
+		wait for 200 us;
+
+		 -- Stop simulation
+		 wait;
+	end process;
+
+END;
