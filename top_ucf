@@ -1,0 +1,30 @@
+############################################################
+# CLOCK INPUT (1.8432 MHz)
+############################################################
+NET "clk" LOC = P43 | IOSTANDARD = LVCMOS33;
+
+############################################################
+# UART RX INPUT
+############################################################
+NET "rx" LOC = P18 | IOSTANDARD = LVCMOS33;
+############################################################
+# 7-SEGMENT DISPLAY 0 (LOW DIGIT)
+# seg0(6 downto 0) → a b c d e f g
+############################################################NET "seg0[0]" LOC = P5  | IOSTANDARD = LVCMOS33;  # a
+NET "seg0[0]" LOC = P6  | IOSTANDARD = LVCMOS33;  # a
+NET "seg0[1]" LOC = P5  | IOSTANDARD = LVCMOS33;  # b
+NET "seg0[2]" LOC = P8  | IOSTANDARD = LVCMOS33;  # c
+NET "seg0[3]" LOC = P12 | IOSTANDARD = LVCMOS33;  # d
+NET "seg0[4]" LOC = P13 | IOSTANDARD = LVCMOS33;  # e
+NET "seg0[5]" LOC = P16 | IOSTANDARD = LVCMOS33;  # f
+NET "seg0[6]" LOC = P14 | IOSTANDARD = LVCMOS33;  # g
+############################################################
+# 7-SEGMENT DISPLAY 1 (HIGH DIGIT)
+############################################################NET "seg1[0]" LOC = P31  | IOSTANDARD = LVCMOS33;  # a
+NET "seg1[0]" LOC = P31 | IOSTANDARD = LVCMOS33;  # a
+NET "seg1[1]" LOC = P32 | IOSTANDARD = LVCMOS33;  # b
+NET "seg1[2]" LOC = P33 | IOSTANDARD = LVCMOS33;  # c
+NET "seg1[3]" LOC = P34 | IOSTANDARD = LVCMOS33;  # d
+NET "seg1[4]" LOC = P36 | IOSTANDARD = LVCMOS33;  # e
+NET "seg1[5]" LOC = P38 | IOSTANDARD = LVCMOS33;  # f
+NET "seg1[6]" LOC = P37 | IOSTANDARD = LVCMOS33;  # g
