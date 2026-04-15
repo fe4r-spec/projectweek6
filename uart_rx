@@ -1,0 +1,145 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date:    04:38:01 04/15/2026 
+-- Design Name: 
+-- Module Name:    uart_rx - Behavioral 
+-- Project Name: 
+-- Target Devices: 
+-- Tool versions: 
+-- Description: 
+--
+-- Dependencies: 
+--
+-- Revision: 
+-- Revision 0.01 - File Created
+-- Additional Comments: 
+--
+----------------------------------------------------------------------------------
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx primitives in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+
+entity uart_rx is
+
+port(
+    clk      : in std_logic;
+    tick     : in std_logic;
+    rx       : in std_logic;
+
+    data_out : out std_logic_vector(7 downto 0);
+    ready    : out std_logic
+);
+
+end uart_rx;
+
+architecture Behavioral of uart_rx is
+
+type state_type is (IDLE, START_DETECT, RECEIVE, STOP);
+signal state : state_type := IDLE;
+
+
+-- Clock divide by 4
+signal clk_div4_cnt : integer range 0 to 3 := 0;
+signal sample_tick  : std_logic := '0';
+
+-- Bit timing
+signal bit_spacing_cnt : integer range 0 to 7 := 0;
+signal bit_count       : integer range 0 to 9 := 0;
+
+-- Start detection
+signal start_cnt : integer range 0 to 3 := 0;
+
+-- Data
+signal shift_reg : std_logic_vector(7 downto 0) := (others => '0');
+
+begin
+
+--------------------------------------------------
+-- CLOCK DIVIDE BY 4 → sample_tick
+--------------------------------------------------
+process(clk)
+begin
+    if rising_edge(clk) then
+        if clk_div4_cnt = 3 then
+            clk_div4_cnt <= 0;
+            sample_tick <= '1';
+        else
+            clk_div4_cnt <= clk_div4_cnt + 1;
+            sample_tick <= '0';
+        end if;
+    end if;
+end process;
+
+--------------------------------------------------
+-- UART FSM
+--------------------------------------------------
+process(clk)
+begin
+  if rising_edge(clk) then
+
+        if sample_tick = '1' then
+
+            case state is
+
+                --------------------------------------------------
+                when IDLE =>
+					  ready <= '0';
+                    start_cnt <= 0;
+
+                    if rx = '0' then
+                        state <= START_DETECT;
+                    end if;
+					--------------------------------------------------
+                when START_DETECT =>
+                    if rx = '0' then
+                        start_cnt <= start_cnt + 1;
+
+                        if start_cnt = 3 then
+                            -- 4 consecutive zeros detected
+                            bit_spacing_cnt <= 4;
+                            bit_count <= 0;
+                            state <= RECEIVE;
+                        end if;								                    else
+                        state <= IDLE;
+                    end if;
+
+                --------------------------------------------------
+					  when RECEIVE =>
+					 if bit_spacing_cnt = 7 then
+                        bit_spacing_cnt <= 0;
+                        bit_count <= bit_count + 1;
+
+                        -- Ignore start bit (bit_count = 0)
+                        if bit_count <= 7 then
+                            shift_reg(bit_count) <= rx;
+                        end if;
+								  if bit_count = 8 then
+                            state <= STOP;
+                        end if;
+								
+                    else
+                        bit_spacing_cnt <= bit_spacing_cnt + 1;
+                    end if;
+						   --------------------------------------------------
+                when STOP =>
+                    data_out <= shift_reg;
+                    ready <= '1';
+                    state <= IDLE;
+						  
+            end case;
+			 end if;
+    end if;
+end process;
+
+end Behavioral;
+
